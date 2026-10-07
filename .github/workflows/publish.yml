@@ -23,5 +23,5 @@ jobs:
         with:
           node-version: 24
 
-      - name: Publish
-        run: npm publish
+      - name: Stage package for review
+        run: npm stage publish
