@@ -1,6 +1,6 @@
 {
   "name": "opencode-go-limits",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OpenCode TUI sidebar widget: opencode Go subscription usage limits (session/weekly/monthly) as bars + percentages",
   "type": "module",
   "license": "MIT",
@@ -13,20 +13,30 @@
   },
   "homepage": "https://github.com/DanielNinov/opencode-go-limits#readme",
   "exports": {
-    "./tui": "./plugin.tsx"
+    "./tui": "./dist/tui.js"
   },
   "files": [
-    "plugin.tsx",
-    "usage.ts",
+    "dist",
     "README.md",
     "LICENSE"
   ],
   "engines": {
     "opencode": "^1.0.0"
   },
+  "scripts": {
+    "build": "bun build.mjs",
+    "prepublishOnly": "npm run build"
+  },
   "dependencies": {
     "@opencode-ai/plugin": "1.14.48",
     "@opentui/solid": "0.1.107",
     "solid-js": "1.9.12"
+  },
+  "devDependencies": {
+    "@babel/cli": "^8.0.6",
+    "@babel/core": "^8.0.7",
+    "@babel/plugin-syntax-jsx": "^8.0.4",
+    "@babel/preset-typescript": "^8.0.7",
+    "babel-preset-solid": "^1.9.16"
   }
 }
