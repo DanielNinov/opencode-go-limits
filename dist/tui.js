@@ -5,10 +5,9 @@ import { insert as _$insert } from "@opentui/solid";
 import { createTextNode as _$createTextNode } from "@opentui/solid";
 import { insertNode as _$insertNode } from "@opentui/solid";
 import { createElement as _$createElement } from "@opentui/solid";
-/** @jsxImportSource @opentui/solid */
 // OpenCode TUI sidebar widget: opencode Go subscription usage limits
 // (session / weekly / monthly) as bars + percentages.
-// Registered as a file plugin in ~/.config/opencode/tui.json.
+// Installed as an npm plugin via `opencode plugin install` / tui.json.
 
 import { createSignal } from "solid-js";
 import { fetchUsage } from "./usage";
@@ -37,7 +36,7 @@ const tui = async api => {
     if (inFlight) return;
     inFlight = true;
     try {
-      const next = await fetchUsage();
+      const next = await fetchUsage(api.lifecycle.signal);
       if (next) setReport(next);
     } catch {
       // keep last known data on failure
@@ -45,17 +44,20 @@ const tui = async api => {
       inFlight = false;
     }
   };
-  await refresh();
-  timer = setInterval(refresh, REFRESH_MS);
+
+  // Register disposal before the first fetch so a dispose during the
+  // initial request still prevents the interval from ever being created.
   api.lifecycle.onDispose(() => {
     if (timer) clearInterval(timer);
   });
+  await refresh();
+  if (api.lifecycle.signal.aborted) return;
+  timer = setInterval(refresh, REFRESH_MS);
   api.slots.register({
     order: 600,
     slots: {
       sidebar_content() {
         const theme = api.theme.current;
-        const data = report();
         return (() => {
           var _el$ = _$createElement("box"),
             _el$2 = _$createElement("text"),
@@ -63,10 +65,9 @@ const tui = async api => {
           _$insertNode(_el$, _el$2);
           _$insertNode(_el$2, _el$3);
           _$insertNode(_el$3, _$createTextNode(`Usage`));
-          _$insert(_el$, () => data?.map(w => {
+          _$insert(_el$, () => report()?.map(w => {
             const pct = w.percent;
             const color = w.status === "rate-limited" || (pct ?? 0) >= 90 ? theme.error : (pct ?? 0) >= 70 ? theme.warning : theme.success;
-            const kind = w.label === "Session" ? "session" : "period";
             return (() => {
               var _el$5 = _$createElement("box"),
                 _el$6 = _$createElement("text"),
@@ -83,7 +84,7 @@ const tui = async api => {
               _$setProp(_el$7, "fg", color);
               _$insert(_el$7, () => pct === null ? "—" : bar(Math.round(pct / 100 * BAR_WIDTH)));
               _$insert(_el$8, pct === null ? "—" : `${pct}%`);
-              _$insert(_el$9, () => resetCountdown(w.resetsAt, kind));
+              _$insert(_el$9, () => resetCountdown(w.resetsAt, w.kind));
               _$effect(_p$ => {
                 var _v$ = theme.textMuted,
                   _v$2 = theme.text,

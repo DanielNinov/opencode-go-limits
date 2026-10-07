@@ -1,7 +1,6 @@
-/** @jsxImportSource @opentui/solid */
 // OpenCode TUI sidebar widget: opencode Go subscription usage limits
 // (session / weekly / monthly) as bars + percentages.
-// Registered as a file plugin in ~/.config/opencode/tui.json.
+// Installed as an npm plugin via `opencode plugin install` / tui.json.
 
 import type { TuiPlugin, TuiPluginModule } from "@opencode-ai/plugin/tui"
 import { createSignal } from "solid-js"
@@ -36,7 +35,7 @@ const tui: TuiPlugin = async (api) => {
     if (inFlight) return
     inFlight = true
     try {
-      const next = await fetchUsage()
+      const next = await fetchUsage(api.lifecycle.signal)
       if (next) setReport(next)
     } catch {
       // keep last known data on failure
@@ -45,25 +44,28 @@ const tui: TuiPlugin = async (api) => {
     }
   }
 
-  await refresh()
-  timer = setInterval(refresh, REFRESH_MS)
+  // Register disposal before the first fetch so a dispose during the
+  // initial request still prevents the interval from ever being created.
   api.lifecycle.onDispose(() => {
     if (timer) clearInterval(timer)
   })
+
+  await refresh()
+  if (api.lifecycle.signal.aborted) return
+  timer = setInterval(refresh, REFRESH_MS)
 
   api.slots.register({
     order: 600,
     slots: {
       sidebar_content() {
         const theme = api.theme.current
-        const data = report()
 
         return (
           <box>
             <text fg={theme.text}>
               <b>Usage</b>
             </text>
-            {data?.map((w) => {
+            {report()?.map((w) => {
               const pct = w.percent
               const color =
                 w.status === "rate-limited" || (pct ?? 0) >= 90
@@ -71,13 +73,12 @@ const tui: TuiPlugin = async (api) => {
                   : (pct ?? 0) >= 70
                     ? theme.warning
                     : theme.success
-              const kind = w.label === "Session" ? "session" : "period"
               return (
                 <box flexDirection="row" columnGap={1}>
                   <text fg={theme.textMuted}>{w.label.padEnd(8)}</text>
                   <text fg={color}>{pct === null ? "—" : bar(Math.round((pct / 100) * BAR_WIDTH))}</text>
                   <text fg={theme.text}>{pct === null ? "—" : `${pct}%`}</text>
-                  <text fg={theme.textMuted}>{resetCountdown(w.resetsAt, kind)}</text>
+                  <text fg={theme.textMuted}>{resetCountdown(w.resetsAt, w.kind)}</text>
                 </box>
               )
             })}

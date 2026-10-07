@@ -18,7 +18,10 @@ Bar color goes green → yellow (70%+) → red (90%+ or rate-limited). Data refr
 ## Requirements
 
 - OpenCode with TUI plugin support (`@opencode-ai/plugin` ≥ 1.14)
-- An active **opencode Go** subscription with `opencode` auth set up (`opencode auth login` or `/connect` in the TUI) — the key is read from `~/.local/share/opencode/auth.json` under the `opencode-go` provider
+- An active **opencode Go** subscription with `opencode` auth set up (`opencode auth login` or `/connect` in the TUI) — the key is read from `auth.json` under the `opencode-go` provider, from the first of:
+  - `$OPENCODE_DATA_DIR`
+  - `$XDG_DATA_HOME/opencode`
+  - `~/.local/share/opencode`
 
 ## Install
 
@@ -57,14 +60,16 @@ which returns the percentage used and reset time for each window:
 }
 ```
 
-The API key is read from `auth.json` on every fetch, so rotating your key doesn't require a restart. If the fetch fails or no key is found, the widget keeps its last known data (or shows `—`).
+The API key is read from `auth.json` on every fetch, so rotating your key doesn't require a restart. If the fetch fails, a warning with the HTTP status is logged and the widget keeps its last known data; with no key configured, only the header is shown.
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `plugin.tsx` | TUI plugin: registers the `sidebar_content` slot and renders the bars |
+| `plugin.tsx` | TUI plugin source: registers the `sidebar_content` slot and renders the bars |
 | `usage.ts` | Fetch + parse of the usage endpoint (no dependencies) |
+| `build.mjs` | Compiles the sources to `dist/` with the Babel solid preset |
+| `dist/` | Compiled output — what npm ships and opencode loads |
 
 ## License
 

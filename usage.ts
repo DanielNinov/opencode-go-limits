@@ -9,6 +9,7 @@ import { homedir } from "node:os"
 
 export type UsageWindow = {
   label: string
+  kind: "session" | "period"
   percent: number | null
   status: string | null
   resetsAt: string | null
@@ -17,7 +18,7 @@ export type UsageWindow = {
 export type UsageReport = UsageWindow[]
 
 const USAGE_URL = "https://opencode.ai/zen/go/v1/usage"
-const USER_AGENT = "opencode-go-limits/0.1.0"
+const USER_AGENT = "opencode-go-limits"
 
 function dataDir(): string {
   if (process.env.OPENCODE_DATA_DIR) return process.env.OPENCODE_DATA_DIR
@@ -28,8 +29,7 @@ function dataDir(): string {
 function readApiKey(): string | null {
   try {
     const auth = JSON.parse(readFileSync(join(dataDir(), "auth.json"), "utf8"))
-    const entry = auth["opencode-go"] ?? auth["opencode"]
-    const key = entry?.key
+    const key = auth["opencode-go"]?.key
     return typeof key === "string" && key.length > 0 ? key : null
   } catch {
     return null
@@ -41,17 +41,18 @@ function clampPercent(value: unknown): number | null {
   return Math.max(0, Math.min(100, Math.round(value)))
 }
 
-function parseWindow(label: string, raw: unknown): UsageWindow {
+function parseWindow(label: string, kind: "session" | "period", raw: unknown): UsageWindow {
   const w = (raw ?? {}) as Record<string, unknown>
   return {
     label,
+    kind,
     percent: clampPercent(w.percent),
     status: typeof w.status === "string" ? w.status : null,
     resetsAt: typeof w.resetsAt === "string" ? w.resetsAt : null,
   }
 }
 
-export async function fetchUsage(): Promise<UsageReport | null> {
+export async function fetchUsage(outerSignal?: AbortSignal): Promise<UsageReport | null> {
   const key = readApiKey()
   if (!key) return null
 
@@ -61,17 +62,20 @@ export async function fetchUsage(): Promise<UsageReport | null> {
       Accept: "application/json",
       "User-Agent": USER_AGENT,
     },
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.any([AbortSignal.timeout(10_000), ...(outerSignal ? [outerSignal] : [])]),
   })
-  if (!res.ok) return null
+  if (!res.ok) {
+    console.warn(`[opencode-go-limits] usage fetch failed: HTTP ${res.status}`)
+    return null
+  }
 
   const body = (await res.json()) as { usage?: Record<string, unknown> }
   const usage = body.usage
   if (!usage || typeof usage !== "object") return null
 
   return [
-    parseWindow("Session", usage.rolling),
-    parseWindow("Weekly", usage.weekly),
-    parseWindow("Monthly", usage.monthly),
+    parseWindow("Session", "session", usage.rolling),
+    parseWindow("Weekly", "period", usage.weekly),
+    parseWindow("Monthly", "period", usage.monthly),
   ]
 }
