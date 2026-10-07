@@ -4,6 +4,18 @@
   "description": "OpenCode TUI sidebar widget: opencode Go subscription usage limits (session/weekly/monthly) as bars + percentages",
   "type": "module",
   "license": "MIT",
+  "exports": {
+    "./tui": "./plugin.tsx"
+  },
+  "files": [
+    "plugin.tsx",
+    "usage.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "opencode": "^1.0.0"
+  },
   "dependencies": {
     "@opencode-ai/plugin": "1.14.48",
     "@opentui/solid": "0.1.107",
