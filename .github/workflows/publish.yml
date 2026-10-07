@@ -25,5 +25,10 @@ jobs:
       # No registry-url: it writes an .npmrc authToken placeholder that
       # overrides the OIDC trusted-publishing exchange (npm/cli#8730).
 
+      # Trusted publishing needs npm >= 11.5.1; upgrade explicitly so we
+      # don't depend on the version bundled with the runner's Node (npm/cli#9088).
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
       - name: Publish
         run: npm publish
