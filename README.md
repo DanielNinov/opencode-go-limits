@@ -22,27 +22,6 @@ Bar color goes green → yellow (70%+) → red (90%+ or rate-limited). Data refr
 
 ## Install
 
-### Option A — file plugin (local path)
-
-Clone this repo anywhere and reference the plugin file in `~/.config/opencode/tui.json`:
-
-```json
-{
-  "plugin": [
-    "/absolute/path/to/opencode-go-limits/plugin.tsx"
-  ]
-}
-```
-
-Then install dependencies in the project directory (the plugin imports `@opencode-ai/plugin/tui`, `solid-js`, and `@opentui/solid` from its own `node_modules`):
-
-```sh
-bun install
-# or: npm install
-```
-
-### Option B — npm package
-
 ```sh
 opencode plugin install opencode-go-limits -g
 ```
