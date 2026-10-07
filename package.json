@@ -4,6 +4,14 @@
   "description": "OpenCode TUI sidebar widget: opencode Go subscription usage limits (session/weekly/monthly) as bars + percentages",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DanielNinov/opencode-go-limits.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DanielNinov/opencode-go-limits/issues"
+  },
+  "homepage": "https://github.com/DanielNinov/opencode-go-limits#readme",
   "exports": {
     "./tui": "./plugin.tsx"
   },
