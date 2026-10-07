@@ -6,7 +6,54 @@ on:
   workflow_dispatch:
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build
+        run: bun run build
+
+      - name: Load compiled plugin
+        run: |
+          bun -e "
+            const m = await import('./dist/tui.js')
+            if (m.default.id !== 'opencode-go-limits' || typeof m.default.tui !== 'function') {
+              throw new Error('compiled plugin module is invalid')
+            }
+            console.log('plugin module OK:', m.default.id)
+          "
+
+      - name: Guard against untransformed JSX
+        run: |
+          if grep -q "jsxDEV" dist/tui.js; then
+            echo "::error::dist/tui.js contains jsxDEV — JSX was not transformed by the solid preset"
+            exit 1
+          fi
+
+      - name: Pack check
+        run: |
+          npm pack --dry-run
+          node -e "
+            const p = require('./package.json')
+            const fs = require('fs')
+            const target = p.exports && p.exports['./tui']
+            if (!target || !fs.existsSync(target)) {
+              throw new Error('exports[\"./tui\"] missing or target not found: ' + target)
+            }
+            console.log('exports ./tui ->', target, 'OK')
+          "
+
   publish:
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: read

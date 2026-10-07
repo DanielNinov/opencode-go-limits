@@ -25,6 +25,7 @@
   },
   "scripts": {
     "build": "bun build.mjs",
+    "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -37,6 +38,8 @@
     "@babel/core": "^8.0.7",
     "@babel/plugin-syntax-jsx": "^8.0.1",
     "@babel/preset-typescript": "^8.0.7",
-    "babel-preset-solid": "^1.9.16"
+    "@types/node": "^26.6.4",
+    "babel-preset-solid": "^1.9.16",
+    "typescript": "^7.0.2"
   }
 }
