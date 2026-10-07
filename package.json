@@ -1,6 +1,6 @@
 {
   "name": "opencode-go-limits",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenCode TUI sidebar widget: opencode Go subscription usage limits (session/weekly/monthly) as bars + percentages",
   "type": "module",
   "license": "MIT",
