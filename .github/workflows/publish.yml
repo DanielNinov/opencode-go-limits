@@ -22,7 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
+      # No registry-url: it writes an .npmrc authToken placeholder that
+      # overrides the OIDC trusted-publishing exchange (npm/cli#8730).
 
       - name: Publish
         run: npm publish
