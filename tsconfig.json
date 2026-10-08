@@ -10,5 +10,5 @@
     "jsx": "react-jsx",
     "jsxImportSource": "@opentui/solid"
   },
-  "include": ["plugin.tsx", "usage.ts"]
+  "include": ["v1.tsx", "v2.tsx", "entry.ts", "shared.ts", "usage.ts"]
 }

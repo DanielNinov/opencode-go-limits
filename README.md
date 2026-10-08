@@ -17,16 +17,26 @@ Bar color goes green → yellow (70%+) → red (90%+ or rate-limited). Data refr
 
 ## Requirements
 
-- OpenCode with TUI plugin support (`@opencode-ai/plugin` ≥ 1.14)
+- OpenCode **v1 (≥ 1.3.4)** or **v2 (≥ 2.0.x)**. The package declares `engines.opencode: "^1.3.4 || ^2.0.0"` — v1 hosts before 1.3.4 lack the runtime-module interception the plugin relies on, so they are not supported. The same install works on both versions: the plugin ships a dual-shape entry module that each loader reads its own way.
 - An active **opencode Go** subscription with `opencode` auth set up (`opencode auth login` or `/connect` in the TUI) — the key is read from `auth.json` under the `opencode-go` provider, from the first of:
   - `$OPENCODE_DATA_DIR`
   - `$XDG_DATA_HOME/opencode`
   - `~/.local/share/opencode`
 
+Tested against: `@opencode-ai/plugin@1.18.35` (v1) and `@opencode/plugin@2.0.24` (v2) types.
+
 ## Install
+
+**opencode v1:**
 
 ```sh
 opencode plugin install opencode-go-limits -g
+```
+
+**opencode v2:**
+
+```sh
+opencode plugin add opencode-go-limits
 ```
 
 or add it manually to `~/.config/opencode/tui.json`:
@@ -66,7 +76,10 @@ The API key is read from `auth.json` on every fetch, so rotating your key doesn'
 
 | File | Purpose |
 |---|---|
-| `plugin.tsx` | TUI plugin source: registers the `sidebar_content` slot and renders the bars |
+| `v1.tsx` | OpenCode v1 TUI plugin source: registers the `sidebar_content` slot and renders the bars |
+| `v2.tsx` | OpenCode v2 port: same widget via the v2 `setup`/slot API (nested theme tokens) |
+| `entry.ts` | Dual-shape entry module (`id` + `tui` + `setup`) — what opencode loads from `dist/tui.js` |
+| `shared.ts` | Rendering helpers shared by both implementations (bar, reset countdown) |
 | `usage.ts` | Fetch + parse of the usage endpoint (no dependencies) |
 | `build.mjs` | Compiles the sources to `dist/` with the Babel solid preset |
 | `dist/` | Compiled output — what npm ships and opencode loads |
