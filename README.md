@@ -30,7 +30,7 @@ Tested against: `@opencode-ai/plugin@1.18.35` (v1) and `@opencode/plugin@2.0.24`
 **opencode v1:**
 
 ```sh
-opencode plugin install opencode-go-limits -g
+opencode plugin opencode-go-limits -g
 ```
 
 **opencode v2:**
